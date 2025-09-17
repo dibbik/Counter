@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CounterView : MonoBehaviour
+public class CounterView 
 {
     public void ShowCount(int count)
     {

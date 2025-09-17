@@ -1,63 +1,54 @@
-using UnityEngine;
+using System;
 using System.Collections;
+using UnityEngine;
 
-public class Counter : MonoBehaviour
+public class Counter 
 {
-    [SerializeField] private CounterView _view;
+    public event Action<int> OnCountChanged;
 
-    private int _count = 0;
-    private bool _isCounting = false;
-    private Coroutine _countingCoroutine;
+    private int _count;
+    private readonly float _interval;
 
-    void Start()
+    private WaitForSeconds _waitForSeconds;
+
+    private bool _isCounting;
+
+    public Counter(float interval = 0.5f)
     {
-        _view = GetComponent<CounterView>();
-
-        if (_view == null)
-        {
-            Debug.LogError("CounterView не найден на этом же объекте");
-        }
+        _interval = interval;
+        _waitForSeconds = new WaitForSeconds(_interval);
     }
 
-    void Update()
+    public IEnumerator CountCoroutine()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            ToggleCounting();
-        }
-    }
+        _isCounting = true;
 
-    private void ToggleCounting()
-    {
-        _isCounting = !_isCounting;
-
-        if (_isCounting)
-        {
-            if (_countingCoroutine == null)
-            {
-                _countingCoroutine = StartCoroutine(CountUp());
-            }
-
-            _view?.ShowMessage("—четчик запущен!");
-        }
-        else
-        {
-            if (_countingCoroutine != null)
-            {
-                StopCoroutine(_countingCoroutine);
-                _countingCoroutine = null;
-            }
-            _view?.ShowMessage("—четчик остановлен на значении: " + _count);
-        }
-    }
-
-    private IEnumerator CountUp()
-    {
         while (_isCounting)
         {
-            _count++;
-            _view?.ShowCount(_count);
-            yield return new WaitForSeconds(0.5f);
+            yield return _waitForSeconds;
+            Increment();
         }
+    }
+
+    private void Increment()
+    {
+        _count++;
+        OnCountChanged?.Invoke(_count);
+    }
+
+    public void StopCounting()
+    {
+        _isCounting = false;
+    }
+
+    public int GetCurrentCount()
+    {
+        return _count;
+    }
+
+    public void Reset()
+    {
+        _count = 0;
+        OnCountChanged?.Invoke(_count);
     }
 }
