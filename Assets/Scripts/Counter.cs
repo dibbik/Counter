@@ -2,11 +2,12 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class Counter 
+public class Counter
 {
-    public event Action<int> OnCountChanged;
+    public event Action<int> CountChanged;
 
     private int _count;
+
     private readonly float _interval;
 
     private WaitForSeconds _waitForSeconds;
@@ -26,19 +27,19 @@ public class Counter
         while (_isCounting)
         {
             yield return _waitForSeconds;
-            Increment();
+            _count++;
+            CountChanged?.Invoke(_count);
         }
     }
 
-    private void Increment()
+    public void ToggleCounting()
     {
-        _count++;
-        OnCountChanged?.Invoke(_count);
+        _isCounting = !_isCounting;
     }
 
-    public void StopCounting()
+    public bool IsCounting()
     {
-        _isCounting = false;
+        return _isCounting;
     }
 
     public int GetCurrentCount()
@@ -46,9 +47,4 @@ public class Counter
         return _count;
     }
 
-    public void Reset()
-    {
-        _count = 0;
-        OnCountChanged?.Invoke(_count);
-    }
 }
